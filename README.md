@@ -66,17 +66,20 @@ ros2 run apriltag_ros apriltag_node --ros-args \
 
 ### Subscriptions:
 The node subscribes via a `image_transport::CameraSubscriber` to rectified images on topic `image_rect`. The set of topic names depends on the type of image transport (parameter `image_transport`) selected (`raw` or `compressed`):
-- `image_rect` (`raw`, type: `sensor_msgs/msg/Image`)
-- `image_rect/compressed` (`compressed`, type: `sensor_msgs/msg/CompressedImage`)
-- `camera_info` (type: `sensor_msgs/msg/CameraInfo`)
+- `/image_rect` (`raw`, type: `sensor_msgs/msg/Image`)
+- `/image_rect/compressed` (`compressed`, type: `sensor_msgs/msg/CompressedImage`)
+- `/camera_info` (type: `sensor_msgs/msg/CameraInfo`)
 
 ### Publisher:
 - `/tf` (type: `tf2_msgs/msg/TFMessage`)
-- `detections` (type: `apriltag_msgs/msg/AprilTagDetectionArray`)
+- `/detections` (type: `apriltag_msgs/msg/AprilTagDetectionArray`)
 
 The camera intrinsics `P` in `CameraInfo` are used to compute the marker tag pose `T` from the homography `H`. The image and the camera intrinsics need to have the same timestamp.
 
 The tag poses are published on the standard TF topic `/tf` with the header set to the image header and `child_frame_id` set to either `tag<family>:<id>` (e.g. "tag36h11:0") or the frame name selected via configuration file. Additional information about detected tags is published as `AprilTagDetectionArray` message, which contains the original homography  matrix, the `hamming` distance and the `decision_margin` of the detection.
+
+[**Note**] The pose of detected markers with respsect to camera is available only when the camera parameters are given in `/camera_info`. For details on carrying out the procedures of obtaining these camera parameters --- so-called camera calibration, please refer to [Kalibr](https://github.com/ethz-asl/kalibr).
+
 
 ## Configuration
 
@@ -110,10 +113,10 @@ apriltag:                 # node name
       sizes:  [<size1>, <size1>, ...]     # tag-specific edge size, overrides the default 'size'
 ```
 
-The `family` (string) defines the tag family for the detector and must be one of `16h5`, `25h9`, `36h11`, `Circle21h7`, `Circle49h12`, `Custom48h12`, `Standard41h12`, `Standard52h13`. `size` (float) is the tag edge size in meters, assuming square markers.
+The `family` (string) defines the tag family for the detector. We do only use `36h11` (for the non-nested layout) and `Custom52h12` (for the nested layout) for the purpose of multiscale marker detection.  `size` (float) is the tag edge size in meters, assuming square markers.
 
 Instead of publishing all tag poses, the list `tag.ids` can be used to only publish selected tag IDs. Each tag can have an associated child frame name in `tag.frames` and a tag specific size in `tag.sizes`. These lists must either have the same length as `tag.ids` or may be empty. In this case, a default frame name of the form `tag<family>:<id>` and the default tag edge size `size` will be used.
 
-The remaining parameters are set to the their default values from the library. See `apriltag.h` for a more detailed description of their function.
+[**Note**] In the YAML files we provide in `cfg/`, these IDs and sizes of markers consisting of either non-nested or nested layouts are commented out. To estimate pose of markers at each scale, these values should be set appropriately.
 
-See [tags_36h11.yaml](cfg/tags_36h11.yaml) for an example configuration that publishes specific tag poses of the 36h11 family.
+The remaining parameters are set to the their default values from the library. See `apriltag.h` for a more detailed description of their function.
