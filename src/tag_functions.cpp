@@ -9,6 +9,7 @@
 #include <tagCustom48h12.h>
 #include <tagStandard41h12.h>
 #include <tagStandard52h13.h>
+#include <tagCustom52h12.h>
 
 // create and delete functions for default tags
 #define TAG_FUN(name) {#name, {tag##name##_create, tag##name##_destroy}},
@@ -24,5 +25,6 @@ const std::unordered_map<std::string, std::pair<apriltag_family_t* (*) (void), v
     TAG_FUN(Custom48h12)
     TAG_FUN(Standard41h12)
     TAG_FUN(Standard52h13)
+    TAG_FUN(Custom52h12)
     // clang-format on
 };
